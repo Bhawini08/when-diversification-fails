@@ -67,3 +67,16 @@ Outputs are written to `results/`.
 ## Research discipline
 
 The live analysis uses market data only for empirical validation. Synthetic mode exists so tests and CI remain deterministic and reproducible.
+
+## What the repository produces
+
+The analysis writes regime summaries, full/normal/stress/downside correlation matrices, lower-tail co-exceedance, synchronized drawdowns, rolling average correlation, crisis-window diagnostics, and a compact metrics JSON to `results/`. The generated directory is intentionally excluded from version control so empirical outputs can be regenerated from the current data rather than presented as permanently current.
+
+## Validation
+
+The test suite checks the stress classifier, dependence metrics, diversification diagnostics, and deterministic synthetic research path. GitHub Actions installs the environment, runs `pytest`, and executes the synthetic analysis on every push and pull request.
+
+## Limitations
+
+ETF proxies are investable approximations rather than pure asset-class indexes. Inception dates differ, exposures evolve through time, and correlation alone does not describe joint downside risk. The framework therefore combines several diagnostics and treats crisis windows as descriptive evidence rather than forecasts.
+
