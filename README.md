@@ -1,82 +1,37 @@
 # When Diversification Fails
 
-A cross-asset risk research project examining how diversification changes during market stress.
+**Average correlation rose only modestly in stress, but that average hid opposite moves inside fixed income.** Investment-grade and high-yield credit moved closer together while Treasury–credit correlations fell. For the equal-weight portfolio, both the diversification ratio and the effective number of bets dropped.
 
-The central question is not whether assets are diversified on average. It is whether the relationships that justify diversification remain intact when losses accelerate, volatility rises, and drawdowns become synchronized.
+## Results from daily ETF returns
 
-## Research questions
+November 15, 2016–October 30, 2026. The analysis uses Yahoo Finance adjusted prices for SPY, IEF, TLT, GLD, DBC, LQD, HYG and VNQ as proxies for equities, Treasuries, gold, commodities, credit and real estate.
 
-- Do cross-asset correlations rise during stressed markets?
-- Which relationships deteriorate most in downside states?
-- How often do major asset classes experience simultaneous drawdowns?
-- Does a portfolio that looks diversified in normal markets become concentrated in stress?
-- Which metrics detect diversification fragility earlier than a static correlation matrix?
+| Metric | Normal | Stress |
+| --- | ---: | ---: |
+| Trading days | 1,655 | 848 |
+| Average pairwise correlation | 0.264 | 0.307 |
+| Diversification ratio | 1.779 | 1.580 |
+| Effective number of bets | 6.78 | 6.20 |
 
-## Asset universe
+| ETF pair | Stress minus normal correlation |
+| --- | ---: |
+| LQD–HYG | +0.127 |
+| IEF–LQD | -0.252 |
+| TLT–LQD | -0.277 |
+| IEF–HYG | -0.081 |
+| TLT–HYG | -0.116 |
 
-The default live universe uses liquid U.S.-listed ETFs as transparent proxies for broad asset classes:
+All eight ETFs were simultaneously at least 10% below their own running peaks on at least one date. The 2022 inflation and rate shock had an average pairwise correlation of 0.387, versus 0.214 in the COVID shock window. The composition of stress mattered more than any single average.
 
-- SPY: U.S. equities
-- IEF: intermediate U.S. Treasuries
-- TLT: long-duration U.S. Treasuries
-- GLD: gold
-- DBC: broad commodities
-- LQD: investment-grade credit
-- HYG: high-yield credit
-- VNQ: U.S. REITs
+### What counts as stress
 
-## Analytics
+A day is tagged as stress when 63-day trailing equal-weight portfolio volatility is at or above its expanding 80th percentile, or when that portfolio is at least 10% below its running peak. Conditioning on high volatility can bias unadjusted correlations upward, so these are descriptive comparisons, not evidence of structural contagion. See [Forbes and Rigobon](https://www.nber.org/papers/w7267).
 
-- full-sample and rolling correlation
-- downside correlation
-- stress versus normal-state correlation
-- lower-tail co-exceedance
-- synchronized drawdown frequency
-- average pairwise correlation
-- diversification ratio
-- effective number of bets
-- volatility-regime classification
-- portfolio fragility diagnostics
-- crisis-window summaries
-
-## Methodology
-
-Stress is identified using only contemporaneous or trailing information. The default market-state classifier combines trailing portfolio volatility and portfolio drawdown. A date is classified as stressed when trailing volatility is above its historical threshold or the portfolio is in a sufficiently deep drawdown.
-
-Downside dependence is measured separately from unconditional dependence so benign periods do not dilute the relationships that matter during losses.
-
-The project deliberately distinguishes descriptive stress diagnostics from predictive claims. It asks whether diversification has historically weakened in stress, not whether a specific crisis can be forecast.
-
-## Quick start
+The [analysis](src/diversification/analysis.py) also reports lower-tail co-exceedance and drawdown synchronization. It does not estimate GARCH models or copulas.
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
-export PYTHONPATH=src
-
-pytest -q
-python scripts/run_analysis.py --mode synthetic
-python scripts/run_analysis.py --mode live
-
-streamlit run dashboard/app.py
+PYTHONPATH=src python scripts/run_analysis.py --mode live
 ```
 
-Outputs are written to `results/`.
-
-## Research discipline
-
-The live analysis uses market data only for empirical validation. Synthetic mode exists so tests and CI remain deterministic and reproducible.
-
-## What the repository produces
-
-The analysis writes regime summaries, full/normal/stress/downside correlation matrices, lower-tail co-exceedance, synchronized drawdowns, rolling average correlation, crisis-window diagnostics, and a compact metrics JSON to `results/`. The generated directory is intentionally excluded from version control so empirical outputs can be regenerated from the current data rather than presented as permanently current.
-
-## Validation
-
-The test suite checks the stress classifier, dependence metrics, diversification diagnostics, and deterministic synthetic research path. GitHub Actions installs the environment, runs `pytest`, and executes the synthetic analysis on every push and pull request.
-
-## Limitations
-
-ETF proxies are investable approximations rather than pure asset-class indexes. Inception dates differ, exposures evolve through time, and correlation alone does not describe joint downside risk. The framework therefore combines several diagnostics and treats crisis windows as descriptive evidence rather than forecasts.
-
+The command uses the full available sample. For comparison with the dated table, restrict input prices to the same window (including the preceding close for the first return).
